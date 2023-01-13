@@ -43,11 +43,11 @@ erro_saida_s_k = (1 - omicron_k) * f_derivada(nets_s_k) # (1 - omicron_k) é o d
 # Calcula-se o erro da camada oculta:
 erro_oculta_o_j = f_derivada(nets_o_j) * np.dot(erro_saida_s_k, peso_saida.T)
 
-# # Atualiza os pesos da camada de saída:
-# peso_saida = peso_saida + np.dot(saida_oculta.T, erro_saida_s_k)
+# Atualiza os pesos da camada de saída:
+peso_saida = peso_saida + np.dot(saida_oculta.T, erro_saida_s_k)
 
-# # Atualiza os pesos da camada oculta:
-# peso_oculta = peso_oculta + np.dot(X.T, erro_oculta_o_j)
+# Atualiza os pesos da camada oculta:
+peso_oculta = peso_oculta + np.dot(X.T, erro_oculta_o_j)
 
 # Imprime os pesos atualizados
 print("Pesos atualizados da camada oculta: ", peso_oculta)
