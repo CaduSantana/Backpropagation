@@ -24,8 +24,8 @@ class Rede:
         self.f_derivada = f_derivada
 
         # Definindo pesos aleatórios para cada camada
-        self.peso_oculta = np.random.random((entrada.shape[1], n_ocultos)) /100
-        self.peso_saida = np.random.random((n_ocultos, n_saidas)) /100
+        self.peso_oculta = np.random.random_sample((entrada.shape[1], n_ocultos)) - 0.01
+        self.peso_saida = np.random.random_sample((n_ocultos, n_saidas)) -0.01
 
         # Delta das Camadas
         self.delta_oculta = None
@@ -39,7 +39,7 @@ class Rede:
         self.tranf_oculta = None
         self.tranf_saida = None
 
-        self.erro_rede = None
+        self.erro_rede = 1000000
         self.matriz_confusao = np.zeros((n_saidas, n_saidas))
     
 
@@ -70,13 +70,15 @@ class Rede:
         self.peso_oculta -= np.dot(self.entrada.T, self.delta_oculta) * self.taxa_aprendizado
 
 
-    def treinar(self, n_iteracoes, erro_max = None, is_erro_max = False):
+    def treinar(self, n_iteracoes = 0, erro_max = None, is_erro_max = False):
         if is_erro_max:
-            while self.erro_rede > erro_max:
+            while True:
                 self.passagem_frente()
                 self.passagem_tras()
+                if self.erro_rede < erro_max:
+                    break
         else:
-            for i in range(n_iteracoes):
+            for _ in range(n_iteracoes):
                 self.passagem_frente()
                 self.passagem_tras()
     
@@ -85,11 +87,15 @@ class Rede:
         for _ in entrada:
             self.entrada = entrada
             self.passagem_frente()
+        print(self.tranf_saida)
 
-        saida = self.tranf_saida.round()
-        for i in saida:
-            indice = np.where(i == 1)
-            self.matriz_confusao[indice] += 1
+        # for i in self.tranf_saida:
+        #     for j in i:
+        #         if j < 0.5:
+        #             j = np.floor(j)
+        #         else:
+        #             j = np.ceil(j)
+            
 
 
 if __name__ == '__main__':
@@ -117,5 +123,7 @@ if __name__ == '__main__':
     rede.treinar(n_iretacoes)
     print("\n\n Predição: \n")
     rede.prever(entrada)
-    print(rede.saida)
+    print(rede.tranf_saida.round())
+    print()
+    print(rede.matriz_confusao)
     

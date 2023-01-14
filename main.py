@@ -74,7 +74,8 @@ class Interface(QMainWindow):
 
 
     def treinar(self):
-        self.saida_texto.append("Carreagando Dados...\n\n")
+        self.saida_texto.append("----------------------------------------------------------------------------------\n" + 
+                                "Carreagando Dados...\n")
         # abrir o arquivo
         df_entrada_treino = pd.read_csv(self.arquivo_treino)
         # pegando o número de entradas
@@ -104,7 +105,7 @@ class Interface(QMainWindow):
             iteracoes = int(self.input_iteracoes.text())
             self.rede.treinar(n_iteracoes=iteracoes)
         
-        self.saida_texto.append("Erro: " + str(self.rede.erro_rede) + "\n")
+        self.saida_texto.append("Erro da rede: " + str(self.rede.erro_rede) + "\n")
         self.saida_texto.append("Treinamento finalizado.\n\n")
         
         
@@ -116,7 +117,7 @@ class Interface(QMainWindow):
 
         self.rede.prever(entrada)
         self.saida_rede = self.rede.tranf_saida
-        print(self.rede.matriz_confusao)
+        print(self.saida_rede)
 
     
     def montar_vetor_saida_esperada(self, df_entrada_treino):
