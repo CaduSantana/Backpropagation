@@ -13,7 +13,7 @@ def f_hiperbolica_derivada (x):
 
 
 class Rede:
-    def __init__(self, entrada: np.array, n_ocultos: int, n_saidas: int, saida_esperada: np.array, f, f_derivada, taxa_aprendizado = 1) -> None:
+    def __init__(self, entrada: np.array, n_ocultos: int, n_saidas: int, saida_esperada: np.array, f, f_derivada, taxa_aprendizado = 1):
         # Definindo as variáveis da rede
         self.entrada = entrada
         self.saida = None
@@ -24,8 +24,8 @@ class Rede:
         self.f_derivada = f_derivada
 
         # Definindo pesos aleatórios para cada camada
-        self.peso_oculta = np.random.random((entrada.shape[1], n_ocultos)) 
-        self.peso_saida = np.random.random((n_ocultos, n_saidas))
+        self.peso_oculta = np.random.random((entrada.shape[1], n_ocultos)) /100
+        self.peso_saida = np.random.random((n_ocultos, n_saidas)) /100
 
         # Delta das Camadas
         self.delta_oculta = None
@@ -38,6 +38,9 @@ class Rede:
         # Valor de tranferencia das camadas
         self.tranf_oculta = None
         self.tranf_saida = None
+
+        self.erro_rede = None
+        self.matriz_confusao = np.zeros((n_saidas, n_saidas))
     
 
     def passagem_frente(self):
@@ -57,6 +60,7 @@ class Rede:
         # 1. Calcular erros
         # 1.1. Camada de saída
         erro_saida = (self.tranf_saida - self.saida_esperada)
+        self.erro_rede = np.sum(erro_saida**2) /2
         self.delta_saida = np.atleast_2d(erro_saida * self.d_parcial_saida)
         # 1.2. Camada oculta
         self.delta_oculta = np.atleast_2d(self.d_parcial_oculta * np.dot(self.delta_saida, self.peso_saida.T))
@@ -66,18 +70,26 @@ class Rede:
         self.peso_oculta -= np.dot(self.entrada.T, self.delta_oculta) * self.taxa_aprendizado
 
 
-    def treinar(self, n_iteracoes):
-        for i in range(n_iteracoes):
-            self.passagem_frente()
-            self.passagem_tras()
+    def treinar(self, n_iteracoes, erro_max = None, is_erro_max = False):
+        if is_erro_max:
+            while self.erro_rede > erro_max:
+                self.passagem_frente()
+                self.passagem_tras()
+        else:
+            for i in range(n_iteracoes):
+                self.passagem_frente()
+                self.passagem_tras()
     
 
     def prever(self, entrada):
-        for i in entrada:
+        for _ in entrada:
             self.entrada = entrada
             self.passagem_frente()
-        print(self.tranf_saida)
-        print()
+
+        saida = self.tranf_saida.round()
+        for i in saida:
+            indice = np.where(i == 1)
+            self.matriz_confusao[indice] += 1
 
 
 if __name__ == '__main__':
@@ -97,7 +109,7 @@ if __name__ == '__main__':
     saida_esperada = np.array([[0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]]).T
 
 
-    n_ocultos = 6
+    n_ocultos = 4
     n_saidas = 1
     n_iretacoes = 1000
     rede = Rede(entrada, n_ocultos, n_saidas, saida_esperada, f_logistica, f_logistica_derivada)
@@ -105,4 +117,5 @@ if __name__ == '__main__':
     rede.treinar(n_iretacoes)
     print("\n\n Predição: \n")
     rede.prever(entrada)
+    print(rede.saida)
     
