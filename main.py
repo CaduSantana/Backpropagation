@@ -54,6 +54,7 @@ class Interface(QMainWindow):
 
         self.rede = None
         self.saida_rede = None
+        self.saida_esperada = None
         self.matriz_confusao = None
 
     
@@ -76,8 +77,12 @@ class Interface(QMainWindow):
     def treinar(self):
         self.saida_texto.append("----------------------------------------------------------------------------------\n" + 
                                 "Carreagando Dados...\n")
-        # abrir o arquivo
-        df_entrada_treino = pd.read_csv(self.arquivo_treino)
+        try:
+            # abrir o arquivo
+            df_entrada_treino = pd.read_csv(self.arquivo_treino)
+        except:
+            self.saida_texto.append("Erro ao abrir o arquivo de treino.\n")
+            return
         # pegando o número de entradas
         num_entradas = df_entrada_treino.shape[1] - 1
         # pegando o número de saídas
@@ -89,14 +94,14 @@ class Interface(QMainWindow):
                                "\nNúmero de saídas (classes): " + str(num_saidas) + 
                                "\n\n")
 
-        saida_esperada = self.montar_vetor_saida_esperada(df_entrada_treino)
+        self.saida_esperada = self.montar_vetor_saida_esperada(df_entrada_treino)
         entrada = df_entrada_treino.to_numpy()
         entrada = np.delete(entrada, df_entrada_treino.shape[1]-1, 1)
 
         self.definir_f()
 
         self.saida_texto.append("Treinamento iniciado.\n")
-        self.rede = Rede(entrada=entrada, n_ocultos=num_oculta, n_saidas=num_saidas, saida_esperada=saida_esperada, f=self.f, f_derivada=self.f_derivada, taxa_aprendizado=1)
+        self.rede = Rede(entrada=entrada, n_ocultos=num_oculta, n_saidas=num_saidas, saida_esperada=self.saida_esperada, f=self.f, f_derivada=self.f_derivada, taxa_aprendizado=1)
         
         if self.is_erro_max():
             erro_max = float(self.input_erro.text())
@@ -110,14 +115,27 @@ class Interface(QMainWindow):
         
         
     def predizer(self):
-        df_entrada_teste = pd.read_csv(self.arquivo_teste)
+        self.saida_texto.append("----------------------------------------------------------------------------------\n" +
+                                "Carreagando Dados...\n")
+        try:
+            # abrir o arquivo
+            df_entrada_teste = pd.read_csv(self.arquivo_teste)
+        except:
+            self.saida_texto.append("Erro ao abrir o arquivo de teste.\n")
+            return
 
+        saida_esperada = self.montar_vetor_saida_esperada(df_entrada_teste)
         entrada = df_entrada_teste.to_numpy()
         entrada = np.delete(entrada, df_entrada_teste.shape[1] - 1, 1)
 
+        self.saida_texto.append("Predição iniciada.\n")
         self.rede.prever(entrada)
         self.saida_rede = self.rede.tranf_saida
+        self.saida_texto.append("Matriz de confusão:\n")
+        self.monta_matriz_confusao(saida_esperada=saida_esperada)
+        self.saida_texto.append(str(self.matriz_confusao) + "\n")
         print(self.saida_rede)
+        self.saida_texto.append("Predição finalizada.\n\n")
 
     
     def montar_vetor_saida_esperada(self, df_entrada_treino):
@@ -127,6 +145,14 @@ class Interface(QMainWindow):
             saida_esperada[i][df_entrada_treino['classe'][i] - 1] = 1
 
         return saida_esperada
+
+    
+    def monta_matriz_confusao(self, saida_esperada):
+        self.matriz_confusao = np.zeros((self.saida_rede.shape[1], self.saida_rede.shape[1]))
+        for rede, esperada in zip(self.saida_rede, saida_esperada):
+            indice_esperado = np.argmax(esperada)
+            indice_saida = np.argmax(rede)
+            self.matriz_confusao[indice_saida][indice_esperado] += 1
 
 
     def calcula_oculta(self, num_entradas, num_saidas):
