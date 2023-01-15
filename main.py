@@ -8,13 +8,16 @@ import matplotlib.pyplot as plt
 
 
 def f_logistica(x):
-    return 1 / (1 + np.exp(-x))
+    return 1.0 / (1.0 + np.exp(-x))
+
 def f_logistica_derivada (x):
     return f_logistica(x) * (1 - f_logistica(x))
+
 def f_hiperbolica (x):
-    return (1 - np.exp(-2*x)) / (1 + np.exp(-2*x))
+    return np.tanh(x)
+
 def f_hiperbolica_derivada (x):
-    return 1 - f_hiperbolica(x)**2
+    return 1.0 - f_hiperbolica(x)**2
 
 
 class Interface(QMainWindow):
@@ -134,13 +137,17 @@ class Interface(QMainWindow):
         self.saida_texto.append("Matriz de confusão:\n")
         self.monta_matriz_confusao(saida_esperada=saida_esperada)
         self.saida_texto.append(str(self.matriz_confusao) + "\n")
-        print(self.saida_rede)
         self.saida_texto.append("Predição finalizada.\n\n")
 
     
     def montar_vetor_saida_esperada(self, df_entrada_treino):
         # saida_esperada = np.array([df_entrada_treino['classe']]).T
-        saida_esperada = np.zeros((df_entrada_treino.shape[0], df_entrada_treino['classe'].max()))
+        saida_esperada = None
+        if self.btn_hiperbolica.isChecked():
+            saida_esperada = -np.ones((df_entrada_treino.shape[0], df_entrada_treino['classe'].max()))
+        else:
+            saida_esperada = np.zeros((df_entrada_treino.shape[0], df_entrada_treino['classe'].max()))
+            
         for i in range(df_entrada_treino.shape[0]):
             saida_esperada[i][df_entrada_treino['classe'][i] - 1] = 1
 

@@ -1,17 +1,6 @@
 import numpy as np
 
 
-# Funções de tranferência
-def f_logistica(x):
-    return 1 / (1 + np.exp(-x))
-def f_logistica_derivada (x):
-    return f_logistica(x) * (1 - f_logistica(x))
-def f_hiperbolica (x):
-    return (1 - np.exp(-2*x)) / (1 + np.exp(-2*x))
-def f_hiperbolica_derivada (x):
-    return 1 - f_hiperbolica(x)**2
-
-
 class Rede:
     def __init__(self, entrada: np.array, n_ocultos: int, n_saidas: int, saida_esperada: np.array, f, f_derivada, taxa_aprendizado = 1):
         # Definindo as variáveis da rede
@@ -87,43 +76,3 @@ class Rede:
         for _ in entrada:
             self.entrada = entrada
             self.passagem_frente()
-        print(self.tranf_saida)
-
-        # for i in self.tranf_saida:
-        #     for j in i:
-        #         if j < 0.5:
-        #             j = np.floor(j)
-        #         else:
-        #             j = np.ceil(j)
-            
-
-
-if __name__ == '__main__':
-    entrada = np.array([[0, 0],
-                        [0, 1],
-                        [1, 0],
-                        [1, 1],
-                        [0, 0],
-                        [0, 1],
-                        [1, 0],
-                        [1, 1],
-                        [0, 0],
-                        [0, 1],
-                        [1, 0],
-                        [1, 1]])
-
-    saida_esperada = np.array([[0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]]).T
-
-
-    n_ocultos = 4
-    n_saidas = 1
-    n_iretacoes = 1000
-    rede = Rede(entrada, n_ocultos, n_saidas, saida_esperada, f_logistica, f_logistica_derivada)
-
-    rede.treinar(n_iretacoes)
-    print("\n\n Predição: \n")
-    rede.prever(entrada)
-    print(rede.tranf_saida.round())
-    print()
-    print(rede.matriz_confusao)
-    
